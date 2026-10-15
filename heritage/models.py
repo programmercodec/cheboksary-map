@@ -141,3 +141,24 @@ class Suggestion(models.Model):
 
     def __str__(self):
         return f"Правка к {self.place}"
+
+class PlacePhoto(models.Model):
+    """Фото PastVu, которое модератор закрепил за местом."""
+    place = models.ForeignKey(
+        Place, on_delete=models.CASCADE, related_name="photos",
+        verbose_name="Место")
+    pastvu_cid = models.IntegerField("Номер фото на PastVu")
+    file = models.CharField("Файл PastVu", max_length=200)
+    title = models.CharField("Подпись", max_length=300, blank=True)
+    year = models.IntegerField("Год", null=True, blank=True)
+    year2 = models.IntegerField("Год (конец)", null=True, blank=True)
+    pinned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, verbose_name="Кто закрепил")
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("place", "pastvu_cid")
+
+    def __str__(self):
+        return f"PastVu {self.pastvu_cid} → {self.place}"

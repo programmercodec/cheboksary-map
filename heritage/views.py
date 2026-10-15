@@ -1,26 +1,28 @@
 import json
+import re
 import urllib.parse
 import urllib.request
 
-from django.core.cache import cache
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.gis.geos import Point
+from django.core.cache import cache
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .forms import PlaceEditForm, PlaceSuggestForm, RegisterForm
-from .models import Credibility, Place, Source, Status, Suggestion
-from .serializers import PlaceDetailSerializer, PlaceListSerializer
+from .models import Credibility, Place, PlacePhoto, Source, Status, Suggestion
+from .serializers import PlaceDetailSerializer, PlaceListSerializer, pastvu_photo
 
 PASTVU_API = "https://api.pastvu.com/api2"
+FILE_RE = re.compile(r"^[A-Za-z0-9/_.\-]+\.(?:jpe?g|png|webp|gif)$")
 
 
 def fetch_pastvu(lat, lon, distance):
-    key = f"pastvu:{lat:.4f}:{lon:.4f}:{distance}"
+    key = f"pastvu2:{lat:.4f}:{lon:.4f}:{distance}"
     cached = cache.get(key)
     if cached is not None:
         return cached
@@ -34,19 +36,19 @@ def fetch_pastvu(lat, lon, distance):
     photos = []
     for p in raw.get("result", {}).get("photos", []):
         file, cid = p.get("file"), p.get("cid")
-        if not file or not cid:
-            continue
-        photos.append({
-            "cid": cid,
-            "title": p.get("title", ""),
-            "year": p.get("year"),
-            "year2": p.get("year2"),
-            "thumb": "https://img.pastvu.com/h/" + file,
-            "image": "https://img.pastvu.com/d/" + file,
-            "url": f"https://pastvu.com/p/{cid}",
-        })
+        if file and cid:
+            photos.append(pastvu_photo(
+                cid, file, p.get("title", ""), p.get("year"), p.get("year2")))
     cache.set(key, photos, 60 * 60 * 24)
     return photos
+
+
+def _int_or_none(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
 
 class PlaceViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
@@ -68,15 +70,39 @@ class PlaceViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=["get"])
     def photos(self, request, pk=None):
         place = self.get_object()
-        try:
-            distance = min(max(int(request.query_params.get("distance", 150)), 30), 500)
-        except ValueError:
-            distance = 150
+        distance = _int_or_none(request.query_params.get("distance")) or 150
+        distance = min(max(distance, 30), 500)
         try:
             photos = fetch_pastvu(place.geom.y, place.geom.x, distance)
         except Exception:
             return Response({"photos": [], "error": "PastVu сейчас недоступен"})
         return Response({"photos": photos})
+
+    @action(detail=True, methods=["post"])
+    def pin_photo(self, request, pk=None):
+        if not request.user.is_staff:
+            return Response({"error": "Нужны права модератора"}, status=403)
+        place = self.get_object()
+        d = request.data
+        cid = _int_or_none(d.get("cid"))
+        file = str(d.get("file", ""))
+        if cid is None or not FILE_RE.match(file) or ".." in file:
+            return Response({"error": "Неверные данные фото"}, status=400)
+        PlacePhoto.objects.update_or_create(
+            place=place, pastvu_cid=cid,
+            defaults={"file": file, "title": str(d.get("title", ""))[:300],
+                      "year": _int_or_none(d.get("year")),
+                      "year2": _int_or_none(d.get("year2")),
+                      "pinned_by": request.user})
+        return Response({"ok": True})
+
+    @action(detail=True, methods=["post"])
+    def unpin_photo(self, request, pk=None):
+        if not request.user.is_staff:
+            return Response({"error": "Нужны права модератора"}, status=403)
+        place = self.get_object()
+        place.photos.filter(pastvu_cid=_int_or_none(request.data.get("cid"))).delete()
+        return Response({"ok": True})
 
 
 def register(request):

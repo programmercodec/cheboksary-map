@@ -40,7 +40,20 @@
   <p><a id="photo-link" target="_blank" rel="noopener">Открыть на PastVu</a>
      · <button type="button" id="photo-close">Закрыть</button></p>
 </dialog>
+<dialog id="cmp-dlg">
+  <p class="cmp-controls">
+    <select id="cmp-a" aria-label="Левое фото"></select>
+    <select id="cmp-b" aria-label="Правое фото"></select>
+  </p>
+  <div id="cmp">
+    <img id="cmp-img-b" alt="">
+    <img id="cmp-img-a" alt="">
+  </div>
+  <input id="cmp-range" type="range" min="0" max="100" value="50" aria-label="Положение шторки">
+  <p><button type="button" id="cmp-close">Закрыть</button></p>
+</dialog>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>const IS_STAFF = {{ user.is_staff|yesno:"true,false" }};</script>
 <script src="{% static 'app.js' %}"></script>
 </body>
 </html>

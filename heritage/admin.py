@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
-from .models import Source, Place, Event, Person, Suggestion, Status
+from .models import Source, Place, Event, Person, Suggestion, Status, PlacePhoto
 
 ALLOWED_FIELDS = {"name_ru", "name_cv", "old_names", "address",
                   "description_ru", "description_cv", "year_from", "year_to"}
@@ -29,6 +29,10 @@ def accept_suggestion(modeladmin, request, queryset):
         s.status = Status.PUBLISHED
         s.save()
 
+class PlacePhotoInline(admin.TabularInline):
+    model = PlacePhoto
+    extra = 0
+
 @admin.register(Place)
 class PlaceAdmin(SimpleHistoryAdmin, GISModelAdmin):
     list_display = ("name_ru", "category", "credibility", "status")
@@ -37,6 +41,7 @@ class PlaceAdmin(SimpleHistoryAdmin, GISModelAdmin):
     filter_horizontal = ("sources",)
     actions = [publish, reject]
     gis_widget_kwargs = {"attrs": {"default_lon": 47.25, "default_lat": 56.13, "default_zoom": 13}}
+    inlines = [PlacePhotoInline]
 
 @admin.register(Event)
 class EventAdmin(SimpleHistoryAdmin):

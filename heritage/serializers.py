@@ -3,6 +3,15 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import Place, Event, Person, Source, Status
 
 
+def pastvu_photo(cid, file, title="", year=None, year2=None):
+    return {
+        "cid": cid, "file": file, "title": title, "year": year, "year2": year2,
+        "thumb": "https://img.pastvu.com/h/" + file,
+        "image": "https://img.pastvu.com/d/" + file,
+        "url": f"https://pastvu.com/p/{cid}",
+    }
+
+
 class SourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Source
@@ -34,13 +43,14 @@ class PlaceDetailSerializer(GeoFeatureModelSerializer):
     sources = SourceSerializer(many=True, read_only=True)
     events = serializers.SerializerMethodField()
     people = serializers.SerializerMethodField()
+    pinned_photos = serializers.SerializerMethodField()
 
     class Meta:
         model = Place
         geo_field = "geom"
         fields = ("id", "name_ru", "name_cv", "old_names", "category", "address",
                   "year_from", "year_to", "description_ru", "description_cv",
-                  "credibility", "sources", "events", "people")
+                  "credibility", "sources", "events", "people", "pinned_photos")
 
     def get_events(self, obj):
         qs = obj.events.filter(status=Status.PUBLISHED)
@@ -49,3 +59,7 @@ class PlaceDetailSerializer(GeoFeatureModelSerializer):
     def get_people(self, obj):
         qs = obj.people.filter(status=Status.PUBLISHED, is_deceased=True)
         return PersonShortSerializer(qs, many=True).data
+
+    def get_pinned_photos(self, obj):
+        return [pastvu_photo(x.pastvu_cid, x.file, x.title, x.year, x.year2)
+                for x in obj.photos.all().order_by("year", "id")]
