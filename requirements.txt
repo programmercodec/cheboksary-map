@@ -1,0 +1,6 @@
+Django>=5.1,<6
+psycopg[binary]
+djangorestframework
+djangorestframework-gis
+django-simple-history
+Pillow
