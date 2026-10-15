@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чебоксары: карта времени</title>
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style.css' %}">
+{% block head %}{% endblock %}
+</head>
+<body class="page">
+<header>
+  <h1><a href="/">Чебоксары: карта времени</a></h1>
+  <nav>
+    {% if user.is_authenticated %}
+      <a href="{% url 'suggest_place' %}">Предложить место</a>
+      <span>{{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button>Выйти</button></form>
+    {% else %}
+      <a href="{% url 'login' %}">Войти</a>
+      <a href="{% url 'register' %}">Регистрация</a>
+    {% endif %}
+  </nav>
+</header>
+<div class="content">{% block content %}{% endblock %}</div>
+</body>
+</html>

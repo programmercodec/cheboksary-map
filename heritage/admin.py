@@ -57,6 +57,6 @@ class PersonAdmin(SimpleHistoryAdmin):
 class SuggestionAdmin(admin.ModelAdmin):
     list_display = ("place", "author", "status", "created")
     list_filter = ("status",)
-    actions = [accept_suggestion]
+    actions = [accept_suggestion, reject]
 
 admin.site.register(Source)

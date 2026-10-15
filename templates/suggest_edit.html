@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Предложить правку: {{ place.name_ru }}</h2>
+<p class="hint">Измените то, что считаете неточным, и укажите источник. Правка пройдёт проверку.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Отправить на проверку</button></form>
+{% endblock %}

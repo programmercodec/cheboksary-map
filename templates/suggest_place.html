@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<h2>Предложить новое место</h2>
+<p class="hint">Нажмите на карту, чтобы отметить точку. Предложение попадёт на проверку модератору.</p>
+<div id="pick-map"></div>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Отправить на проверку</button></form>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map("pick-map").setView([56.1385, 47.245], 14);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution: "© OpenStreetMap"}).addTo(map);
+const latEl = document.getElementById("id_lat"), lonEl = document.getElementById("id_lon");
+let marker;
+function put(lat, lon) {
+  if (marker) map.removeLayer(marker);
+  marker = L.marker([lat, lon]).addTo(map);
+  latEl.value = lat.toFixed(6);
+  lonEl.value = lon.toFixed(6);
+}
+if (latEl.value && lonEl.value) put(+latEl.value, +lonEl.value);
+map.on("click", e => put(e.latlng.lat, e.latlng.lng));
+</script>
+{% endblock %}
