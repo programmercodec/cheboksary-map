@@ -56,9 +56,9 @@ async function showCard(id) {
     <p>${esc(p.description_ru)}</p>
     <p><a href="/places/${esc(f.id)}/suggest/">Предложить правку</a></p>
     ${p.events.length ? "<h3>События</h3>" + list(p.events,
-      e => `<li><b>${esc(e.start_year ?? "")}</b> ${esc(e.title_ru)}</li>`) : ""}
+        e => `<li><b>${esc(e.start_year ?? "")}</b> <a href="/events/${esc(e.id)}/">${esc(e.title_ru)}</a></li>`) : ""}
     ${p.people.length ? "<h3>Люди</h3>" + list(p.people,
-      x => `<li>${esc(x.full_name)} (${esc(x.birth_year ?? "?")}–${esc(x.death_year ?? "?")})</li>`) : ""}
+        x => `<li><a href="/people/${esc(x.id)}/">${esc(x.full_name)}</a> (${esc(x.birth_year ?? "?")}–${esc(x.death_year ?? "?")})</li>`) : ""}
     <h3>Старые фото</h3>
     <div id="pinned"></div>
     <div id="nearby"><p class="hint">Ищем фото на PastVu…</p></div>
@@ -166,3 +166,14 @@ document.getElementById("year").oninput = e => {
 
 drawFilters();
 loadPlaces();
+async function openFromUrl() {
+  const id = new URLSearchParams(location.search).get("place");
+  if (!id) return;
+  const r = await fetch(`/api/places/${id}/`);
+  if (!r.ok) return;
+  const f = await r.json();
+  const [lon, lat] = f.geometry.coordinates;
+  map.setView([lat, lon], 17);
+  showCard(id);
+}
+openFromUrl();

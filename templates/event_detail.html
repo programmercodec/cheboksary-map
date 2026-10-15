@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ event.title_ru }}</h2>
+{% if event.title_cv %}<p>{{ event.title_cv }}</p>{% endif %}
+<p class="hint">
+  {{ event.start_year|default:"дата неизвестна" }}{% if event.end_year and event.end_year != event.start_year %}–{{ event.end_year }}{% endif %}
+  ({{ event.get_date_precision_display }}) · {{ event.get_credibility_display }}</p>
+{% if event.description %}<p>{{ event.description|linebreaksbr }}</p>{% endif %}
+{% if places %}<h3>Где произошло</h3><ul>
+  {% for pl in places %}<li><a href="/?place={{ pl.pk }}">{{ pl.name_ru }}</a></li>{% endfor %}</ul>{% endif %}
+{% if people %}<h3>Участники</h3><ul>
+  {% for p in people %}<li><a href="{% url 'person' p.pk %}">{{ p.full_name }}</a></li>{% endfor %}</ul>{% endif %}
+<h3>Источники</h3>
+{% for s in event.sources.all %}{% if forloop.first %}<ul>{% endif %}
+  <li>{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</li>
+{% if forloop.last %}</ul>{% endif %}{% empty %}<p class="hint">Источников пока нет.</p>{% endfor %}
+<p><a href="{% url 'events' %}">← Все события</a></p>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Добавить человека</h2>
+<p class="hint">Расскажите о родственнике или интересном человеке, связанном с Чебоксарами.
+Карточка пройдёт проверку модератора.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Отправить на проверку</button></form>
+{% endblock %}

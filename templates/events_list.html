@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>События</h2>
+<p class="hint">Что происходило на этой земле.</p>
+{% if events %}
+<ul class="plain">
+  {% for e in events %}
+  <li><b>{{ e.start_year|default:"" }}{% if e.end_year and e.end_year != e.start_year %}–{{ e.end_year }}{% endif %}</b>
+    <a href="{% url 'event' e.pk %}">{{ e.title_ru }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}<p>Пока событий нет. Их добавляют модераторы в админке.</p>{% endif %}
+{% endblock %}

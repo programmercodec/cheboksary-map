@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Люди города</h2>
+<p class="hint">Здесь только те, кого нет в живых. Знаете человека, который связан с Чебоксарами?
+<a href="{% url 'suggest_person' %}">Добавьте его</a>.</p>
+{% if people %}
+<ul class="plain">
+  {% for p in people %}
+  <li><a href="{% url 'person' p.pk %}">{{ p.full_name }}</a>
+    <span class="hint">{{ p.birth_year|default:"?" }}–{{ p.death_year|default:"?" }}{% if p.category %} · {{ p.category }}{% endif %}</span></li>
+  {% endfor %}
+</ul>
+{% else %}<p>Пока никого нет. Станьте первым.</p>{% endif %}
+{% endblock %}

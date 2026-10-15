@@ -50,3 +50,13 @@ body.page{display:block;height:auto}
 #cmp-range{width:100%;accent-color:var(--red);margin-top:8px}
 .cmp-controls{display:flex;gap:8px}
 .cmp-controls select{flex:1;min-width:0;font:inherit;background:transparent;color:inherit}
+header{flex-wrap:wrap;gap:8px}
+header nav{flex-wrap:wrap}
+header nav a{color:var(--river)}
+header input[type=search]{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit;width:140px}
+ul.plain{list-style:none;padding:0}
+ul.plain li{padding:6px 0;border-top:1px solid var(--line)}
+.site-footer{max-width:720px;margin:24px auto 0;padding:16px;border-top:1px solid var(--line);font-size:.9rem;color:var(--river)}
+.content a{color:var(--river)}
+.searchbig{display:flex;gap:8px;margin:12px 0}
+.searchbig input{flex:1;font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit}

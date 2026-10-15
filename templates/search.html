@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Поиск</h2>
+<form method="get" class="searchbig"><input type="search" name="q" value="{{ q }}" placeholder="Название, адрес, имя" aria-label="Поиск"> <button type="submit">Найти</button></form>
+{% if searched %}
+  {% if places or events or people %}
+    {% if places %}<h3>Места</h3><ul>{% for pl in places %}<li><a href="/?place={{ pl.pk }}">{{ pl.name_ru }}</a></li>{% endfor %}</ul>{% endif %}
+    {% if events %}<h3>События</h3><ul>{% for e in events %}<li><a href="{% url 'event' e.pk %}">{{ e.title_ru }}</a></li>{% endfor %}</ul>{% endif %}
+    {% if people %}<h3>Люди</h3><ul>{% for p in people %}<li><a href="{% url 'person' p.pk %}">{{ p.full_name }}</a></li>{% endfor %}</ul>{% endif %}
+  {% else %}<p>Ничего не найдено.</p>{% endif %}
+{% else %}<p class="hint">Введите не меньше двух символов.</p>{% endif %}
+{% endblock %}

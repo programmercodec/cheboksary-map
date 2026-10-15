@@ -13,8 +13,14 @@
 <header>
   <h1><a href="/">Чебоксары: карта времени</a></h1>
   <nav>
+    <a href="{% url 'people' %}">Люди</a>
+    <a href="{% url 'events' %}">События</a>
+    <form action="{% url 'search' %}" class="inline">
+      <input type="search" name="q" placeholder="Поиск" aria-label="Поиск">
+    </form>
     {% if user.is_authenticated %}
-      <a href="{% url 'suggest_place' %}">Предложить место</a>
+      <a href="{% url 'suggest_place' %}">+ Место</a>
+      <a href="{% url 'suggest_person' %}">+ Человек</a>
       <span>{{ user.username }}</span>
       <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button>Выйти</button></form>
     {% else %}
@@ -24,5 +30,10 @@
   </nav>
 </header>
 <div class="content">{% block content %}{% endblock %}</div>
+<footer class="site-footer">
+  <a href="{% url 'rules' %}">Правила</a> ·
+  <a href="{% url 'privacy' %}">Конфиденциальность</a> ·
+  Материалы доступны на условиях CC BY-SA
+</footer>
 </body>
 </html>

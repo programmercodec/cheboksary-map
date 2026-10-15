@@ -1,3 +1,6 @@
+from .forms import PersonSuggestForm, PlaceEditForm, PlaceSuggestForm, RegisterForm
+from .models import (Credibility, Event, Person, Place, PlacePhoto, Source,
+                     Status, Suggestion)
 import json
 import re
 import urllib.parse
@@ -155,3 +158,67 @@ def suggest_edit(request, pk):
                 comment=d["comment"], source_note=d["source_note"])
             return redirect("thanks")
     return render(request, "suggest_edit.html", {"form": form, "place": place})
+
+def people_list(request):
+    people = Person.objects.filter(
+        status=Status.PUBLISHED, is_deceased=True).order_by("full_name")
+    return render(request, "people_list.html", {"people": people})
+
+
+def person_detail(request, pk):
+    person = get_object_or_404(
+        Person, pk=pk, status=Status.PUBLISHED, is_deceased=True)
+    return render(request, "person_detail.html", {
+        "person": person,
+        "places": person.places.filter(status=Status.PUBLISHED),
+        "events": person.events.filter(status=Status.PUBLISHED),
+    })
+
+
+def events_list(request):
+    events = Event.objects.filter(status=Status.PUBLISHED).order_by(
+        "start_year", "title_ru")
+    return render(request, "events_list.html", {"events": events})
+
+
+def event_detail(request, pk):
+    event = get_object_or_404(Event, pk=pk, status=Status.PUBLISHED)
+    return render(request, "event_detail.html", {
+        "event": event,
+        "places": event.places.filter(status=Status.PUBLISHED),
+        "people": event.people.filter(
+            status=Status.PUBLISHED, is_deceased=True),
+    })
+
+
+@login_required
+def suggest_person(request):
+    form = PersonSuggestForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        person = Person.objects.create(
+            full_name=d["full_name"], birth_year=d["birth_year"],
+            death_year=d["death_year"], category=d["category"],
+            biography=d["biography"], author_relation=d["author_relation"],
+            is_deceased=True, status=Status.PENDING, author=request.user)
+        person.sources.add(Source.objects.create(
+            kind=d["source_kind"], title=d["source_title"], url=d["source_url"]))
+        return redirect("thanks")
+    return render(request, "suggest_person.html", {"form": form})
+
+
+def search(request):
+    q = request.GET.get("q", "").strip()
+    places, events, people = [], [], []
+    if len(q) >= 2:
+        places = list(Place.objects.filter(status=Status.PUBLISHED).filter(
+            Q(name_ru__icontains=q) | Q(name_cv__icontains=q)
+            | Q(old_names__icontains=q) | Q(address__icontains=q))[:30])
+        events = list(Event.objects.filter(status=Status.PUBLISHED).filter(
+            Q(title_ru__icontains=q) | Q(title_cv__icontains=q))[:30])
+        people = list(Person.objects.filter(
+            status=Status.PUBLISHED, is_deceased=True,
+            full_name__icontains=q)[:30])
+    return render(request, "search.html", {
+        "q": q, "places": places, "events": events, "people": people,
+        "searched": len(q) >= 2})

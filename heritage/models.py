@@ -107,6 +107,9 @@ class Person(models.Model):
         "Согласие (если жив)", max_length=300, blank=True)
     author_relation = models.CharField(
         "Кем приходится автору", max_length=100, blank=True)
+    author = models.ForeignKey(
+    settings.AUTH_USER_MODEL, null=True, blank=True,
+    on_delete=models.SET_NULL, verbose_name="Автор карточки")
     places = models.ManyToManyField(
         Place, blank=True, related_name="people", verbose_name="Места")
     events = models.ManyToManyField(

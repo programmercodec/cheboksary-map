@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ person.full_name }}</h2>
+<p class="hint">{{ person.birth_year|default:"?" }}–{{ person.death_year|default:"?" }}{% if person.category %} · {{ person.category }}{% endif %}</p>
+{% if person.biography %}<p>{{ person.biography|linebreaksbr }}</p>{% endif %}
+{% if person.author_relation %}<p class="hint">Автор карточки: {{ person.author_relation }}</p>{% endif %}
+{% if places %}<h3>Связанные места</h3><ul>
+  {% for pl in places %}<li><a href="/?place={{ pl.pk }}">{{ pl.name_ru }}</a></li>{% endfor %}</ul>{% endif %}
+{% if events %}<h3>События</h3><ul>
+  {% for e in events %}<li><a href="{% url 'event' e.pk %}">{{ e.title_ru }}</a></li>{% endfor %}</ul>{% endif %}
+<h3>Источники</h3>
+{% for s in person.sources.all %}{% if forloop.first %}<ul>{% endif %}
+  <li>{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</li>
+{% if forloop.last %}</ul>{% endif %}{% empty %}<p class="hint">Источников пока нет.</p>{% endfor %}
+<p><a href="{% url 'people' %}">← Все люди</a></p>
+{% endblock %}
